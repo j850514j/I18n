@@ -1,0 +1,122 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Key Explorer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f9f9f9;
+        }
+        header {
+            background: #4CAF50;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            width: 100%;
+        }
+        .container {
+            margin: 2rem;
+            width: 90%;
+            max-width: 800px;
+        }
+        input[type="file"] {
+            margin: 1rem 0;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 0.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        ul {
+            list-style: none;
+            padding-left: 1rem;
+        }
+        ul ul {
+            margin-left: 1rem;
+            border-left: 1px solid #ddd;
+            padding-left: 1rem;
+        }
+        li {
+            margin: 0.5rem 0;
+        }
+        .highlight {
+            background-color: yellow;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>JSON Key Explorer</h1>
+        <p>Upload a JSON file to explore its keys.</p>
+    </header>
+    <div class="container">
+        <input type="file" id="jsonFile" accept=".json">
+        <input type="text" id="search" placeholder="Search for keys...">
+        <ul id="jsonTree"></ul>
+    </div>
+    <script>
+        const fileInput = document.getElementById('jsonFile');
+        const searchInput = document.getElementById('search');
+        const treeContainer = document.getElementById('jsonTree');
+
+        let jsonData = null;
+
+        // Parse JSON and generate tree structure
+        fileInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        jsonData = JSON.parse(e.target.result);
+                        renderTree(jsonData, treeContainer);
+                    } catch (error) {
+                        alert('Invalid JSON file');
+                    }
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        // Render tree structure recursively
+        function renderTree(data, container) {
+            container.innerHTML = ''; // Clear existing content
+            const ul = document.createElement('ul');
+            for (const key in data) {
+                const li = document.createElement('li');
+                li.textContent = key;
+                if (typeof data[key] === 'object' && data[key] !== null) {
+                    const nestedUl = document.createElement('ul');
+                    renderTree(data[key], nestedUl);
+                    li.appendChild(nestedUl);
+                }
+                ul.appendChild(li);
+            }
+            container.appendChild(ul);
+        }
+
+        // Highlight search matches
+        searchInput.addEventListener('input', () => {
+            const query = searchInput.value.toLowerCase();
+            const items = treeContainer.querySelectorAll('li');
+            items.forEach(item => {
+                if (item.textContent.toLowerCase().includes(query)) {
+                    item.classList.add('highlight');
+                } else {
+                    item.classList.remove('highlight');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
